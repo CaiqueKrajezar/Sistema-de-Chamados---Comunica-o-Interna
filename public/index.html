@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Abrir Chamado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./shared/tokens.css">
+<style>
+  .form-page { max-width: 700px; margin: 0 auto; padding: 40px 24px 60px; }
+  .form-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--accent-ink); background: var(--accent-soft);
+    padding: 5px 10px; border-radius: 100px; margin-bottom: 14px;
+  }
+  .form-eyebrow::before { content: "●"; font-size: 8px; }
+  .form-page h1 { font-size: 28px; line-height: 1.15; }
+  .form-page .lede { color: var(--ink-700); margin-top: 8px; font-size: 15px; max-width: 56ch; }
+
+  .steps { display: flex; gap: 6px; margin: 22px 0 4px; }
+  .step-dot { flex: 1; height: 4px; border-radius: 3px; background: var(--paper-100); }
+  .step-dot.done { background: var(--teal); }
+  .step-dot.active { background: var(--accent); }
+
+  .wizard-card { padding: 26px; margin-top: 18px; display: flex; flex-direction: column; gap: 18px; }
+  .wizard-title { font-size: 16px; font-weight: 700; }
+  .wizard-hint { font-size: 13px; color: var(--ink-700); margin-top: 2px; }
+
+  .pill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .pill-opt {
+    position: relative; border: 1px solid var(--line); background: var(--paper-0);
+    border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .pill-opt input { position: absolute; opacity: 0; }
+  .pill-opt .t { font-weight: 700; font-size: 14px; }
+  .pill-opt .d { font-size: 12px; color: var(--ink-700); margin-top: 3px; }
+  .pill-opt.checked { border-color: var(--ink-900); background: var(--paper-100); }
+  .pill-opt:has(input:focus-visible) { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+  .type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+  .type-opt {
+    position: relative; border: 1px solid var(--line); background: var(--paper-0);
+    border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 13.5px; font-weight: 500;
+  }
+  .type-opt input { position: absolute; opacity: 0; }
+  .type-opt .sla { display: block; font-size: 11.5px; color: var(--ink-500); margin-top: 2px; font-weight: 400; }
+  .type-opt.checked { border-color: var(--ink-900); background: var(--paper-100); }
+  .type-opt:has(input:focus-visible) { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .row-2, .row-3 { grid-template-columns: 1fr; } }
+
+  .checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px 14px; }
+  .checklist label { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+  .checklist input { width: 15px; height: 15px; }
+
+  fieldset { border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px 16px; }
+  fieldset legend { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-700); padding: 0 6px; }
+
+  .radio-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .radio-row label { display: flex; align-items: center; gap: 6px; font-size: 13.5px; cursor: pointer; }
+
+  .file-drop {
+    border: 1px dashed var(--line); border-radius: 9px; padding: 16px; text-align: center;
+    font-size: 13px; color: var(--ink-700); cursor: pointer; background: var(--paper-0);
+  }
+  .file-drop:hover { border-color: var(--ink-500); }
+  .file-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .file-item { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; background: var(--paper-100); padding: 6px 10px; border-radius: 6px; }
+  .file-item button { border: none; background: none; color: var(--danger); cursor: pointer; font-weight: 700; }
+
+  .sla-note {
+    font-size: 12.5px; color: var(--ink-700); background: var(--paper-100);
+    border-radius: 8px; padding: 10px 12px; display: flex; gap: 8px; align-items: flex-start;
+  }
+
+  .wizard-actions { display: flex; justify-content: space-between; align-items: center; }
+  .back-btn { border: none; background: none; color: var(--ink-700); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+  .back-btn:hover { color: var(--ink-900); }
+
+  .field-error { font-size: 12px; color: var(--danger); }
+
+  .confirm { padding: 26px; margin-top: 18px; display: none; gap: 16px; }
+  .confirm.show { display: flex; }
+  .confirm-icon {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--ok-soft); color: var(--ok);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px;
+  }
+  .confirm h3 { font-size: 16px; }
+  .confirm p { margin: 6px 0 0; color: var(--ink-700); font-size: 14px; }
+  .confirm .protocolo { font-family: var(--font-mono); font-weight: 600; color: var(--ink-900); }
+  .confirm .notice-line { margin-top: 10px; font-size: 13px; color: var(--teal); }
+  .confirm .again { margin-top: 14px; }
+
+  .analista-link { max-width: 700px; margin: 0 auto; padding: 0 24px 40px; text-align: right; }
+  .analista-link a { color: var(--ink-500); font-size: 12.5px; text-decoration: none; }
+  .analista-link a:hover { color: var(--teal); text-decoration: underline; }
+
+  .loading-note { color: var(--ink-500); font-size: 13px; padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <header class="topbar">
+    <span class="brand">
+      <span class="brand-mark">CI</span>
+      <span class="brand-text">Central de Chamados</span>
+      <span class="brand-sub">Comunicação&nbsp;Interna</span>
+    </span>
+  </header>
+
+  <main>
+    <div class="form-page">
+      <span class="form-eyebrow">Sem cadastro necessário</span>
+      <h1>Abrir um chamado</h1>
+      <p class="lede">Responda algumas perguntas e sua demanda será encaminhada automaticamente para o analista responsável — sem precisar saber quem é.</p>
+
+      <div class="steps" id="steps"></div>
+
+      <div id="wizard-root">
+        <div class="loading-note">Carregando formulário…</div>
+      </div>
+
+      <div class="card confirm" id="confirm-box">
+        <span class="confirm-icon">✓</span>
+        <div>
+          <h3>Chamado registrado — protocolo <span class="protocolo" id="confirm-proto"></span></h3>
+          <p id="confirm-text"></p>
+          <div class="notice-line" id="confirm-notice"></div>
+          <button class="ghost-btn again" id="btn-novo-chamado">Abrir outro chamado</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="analista-link"><a href="./analista/login.html">Área do analista →</a></div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="./shared/format-utils.js"></script>
+<script src="./shared/api-client.js"></script>
+<script>
+(function () {
+  "use strict";
+  const Fmt = window.Fmt;
+  const Api = window.Api;
+
+  const PUBLICOS = [
+    { valor: "Holding", titulo: "Holding", desc: "Áreas corporativas / escritório central" },
+    { valor: "Operacao-Lojas", titulo: "Operação — Lojas", desc: "Demanda vinda de uma loja" },
+    { valor: "Operacao-CD", titulo: "Operação — CD", desc: "Demanda vinda de um centro de distribuição" },
+    { valor: "Todos", titulo: "Todos os públicos", desc: "Comunicação vale para holding, lojas e CD" }
+  ];
+  const PUBLICO_ALVO_CONTEUDO = [
+    { valor: "Escritorio_SP", titulo: "Escritório Adm. SP" },
+    { valor: "Lojas", titulo: "Lojas" },
+    { valor: "CD", titulo: "Centro de Distribuição (CD)" }
+  ];
+  const ESTRUTURA_OPCOES = ["Local", "Alimentação", "Audiovisual", "Palco", "LED/Telão", "Decoração", "Mobiliário", "Credenciamento", "Brindes", "Transporte", "Fotografia/Vídeo", "Outros"];
+  const MATERIAIS_OPCOES = ["Convite", "E-mail", "Apresentação", "Tela/LED", "Backdrop", "Credencial", "Sinalização", "Materiais de mesa", "Comunicação pós-evento", "Outros"];
+  const ESCOPO_OPCOES = ["Planejamento geral do evento", "Pesquisa de local", "Cotações e orçamento", "Contratação e gestão de fornecedores", "Identidade visual", "Comunicação do evento", "Logística", "Alimentação", "Audiovisual", "Operação no dia do evento", "Gestão completa do evento"];
+
+  const state = {
+    step: "publico", // publico -> area -> tipo -> briefing
+    publico: null,
+    areaId: null,
+    tipoSolicitacaoId: null,
+    tipos: [],
+    areas: [],
+    arquivos: [],
+    checklists: { estrutura: [], materiais: [], escopo: [] }
+  };
+
+  const root = document.getElementById("wizard-root");
+  const stepsEl = document.getElementById("steps");
+  const toastStack = document.getElementById("toast-stack");
+
+  function showToast(msg) {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = msg;
+    toastStack.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = "opacity .25s";
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), 260);
+    }, 3200);
+  }
+
+  function precisaArea() {
+    return state.publico === "Holding" || state.publico === "Todos";
+  }
+
+  function tipoSelecionado() {
+    return state.tipos.find((t) => t.id === state.tipoSolicitacaoId) || null;
+  }
+
+  function ordemPassos() {
+    return precisaArea() ? ["publico", "area", "tipo", "briefing"] : ["publico", "tipo", "briefing"];
+  }
+
+  function renderSteps() {
+    const ordem = ordemPassos();
+    const atual = ordem.indexOf(state.step);
+    stepsEl.innerHTML = ordem
+      .map((s, i) => `<span class="step-dot ${i < atual ? "done" : ""} ${i === atual ? "active" : ""}"></span>`)
+      .join("");
+  }
+
+  function irPara(step) {
+    state.step = step;
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function irProximo() {
+    const ordem = ordemPassos();
+    const i = ordem.indexOf(state.step);
+    irPara(ordem[i + 1]);
+  }
+
+  function irAnterior() {
+    const ordem = ordemPassos();
+    const i = ordem.indexOf(state.step);
+    if (i > 0) irPara(ordem[i - 1]);
+  }
+
+  // ---------- Passo: Público ----------
+  function renderPublico() {
+    root.innerHTML = `
+      <div class="card wizard-card">
+        <div>
+          <div class="wizard-title">Para qual público é esta demanda?</div>
+          <div class="wizard-hint">Isso já direciona parte do roteamento automático.</div>
+        </div>
+        <div class="pill-grid" id="publico-grid">
+          ${PUBLICOS.map(
+            (p) => `<label class="pill-opt ${state.publico === p.valor ? "checked" : ""}" data-valor="${p.valor}">
+              <input type="radio" name="publico" value="${p.valor}" ${state.publico === p.valor ? "checked" : ""} />
+              <div class="t">${p.titulo}</div>
+              <div class="d">${p.desc}</div>
+            </label>`
+          ).join("")}
+        </div>
+      </div>
+    `;
+    const grid = document.getElementById("publico-grid");
+    grid.querySelectorAll(".pill-opt").forEach((opt) => {
+      // Escuta "change" no input, não "click" no label: clicar num <label> que envolve um
+      // <input> dispara o evento click duas vezes (o real + o sintético que o navegador
+      // repassa ao input associado), o que faria irProximo() avançar dois passos de uma vez.
+      opt.querySelector("input").addEventListener("change", () => {
+        state.publico = opt.getAttribute("data-valor");
+        state.areaId = null;
+        irProximo();
+      });
+    });
+  }
+
+  // ---------- Passo: Área ----------
+  function renderArea() {
+    root.innerHTML = `
+      <div class="card wizard-card">
+        <div>
+          <div class="wizard-title">Qual é a sua área?</div>
+          <div class="wizard-hint">Cada área tem um analista dono definido pela Comunicação Interna.</div>
+        </div>
+        <div class="field">
+          <select id="f-area">
+            <option value="">Selecione…</option>
+            ${state.areas.map((a) => `<option value="${a.id}" ${state.areaId === a.id ? "selected" : ""}>${Fmt.escapeHtml(a.nome)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="wizard-actions">
+          <button class="back-btn" id="btn-voltar">← Voltar</button>
+          <button class="btn-primary" id="btn-avancar">Continuar</button>
+        </div>
+      </div>
+    `;
+    document.getElementById("btn-voltar").addEventListener("click", irAnterior);
+    document.getElementById("btn-avancar").addEventListener("click", () => {
+      const val = document.getElementById("f-area").value;
+      if (!val) return showToast("Selecione uma área para continuar.");
+      state.areaId = Number(val);
+      irProximo();
+    });
+  }
+
+  // ---------- Passo: Tipo de solicitação ----------
+  function renderTipo() {
+    root.innerHTML = `
+      <div class="card wizard-card">
+        <div>
+          <div class="wizard-title">Qual é o tipo de solicitação?</div>
+          <div class="wizard-hint">O prazo de atendimento varia por tipo.</div>
+        </div>
+        <div class="type-grid" id="tipo-grid">
+          ${state.tipos
+            .map(
+              (t) => `<label class="type-opt ${state.tipoSolicitacaoId === t.id ? "checked" : ""}" data-id="${t.id}">
+                <input type="radio" name="tipo" value="${t.id}" ${state.tipoSolicitacaoId === t.id ? "checked" : ""} />
+                ${Fmt.escapeHtml(t.nome)}
+                <span class="sla">${Fmt.fmtSla(t.slaDias, t.slaContaDiasUteis)}</span>
+              </label>`
+            )
+            .join("")}
+        </div>
+        <div class="wizard-actions">
+          <button class="back-btn" id="btn-voltar">← Voltar</button>
+          <button class="btn-primary" id="btn-avancar">Continuar</button>
+        </div>
+      </div>
+    `;
+    document.getElementById("btn-voltar").addEventListener("click", irAnterior);
+    document.querySelectorAll("#tipo-grid .type-opt").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        document.querySelectorAll("#tipo-grid .type-opt").forEach((o) => o.classList.remove("checked"));
+        opt.classList.add("checked");
+        state.tipoSolicitacaoId = Number(opt.getAttribute("data-id"));
+      });
+    });
+    document.getElementById("btn-avancar").addEventListener("click", () => {
+      if (!state.tipoSolicitacaoId) return showToast("Selecione um tipo de solicitação.");
+      irProximo();
+    });
+  }
+
+  // ---------- Passo: Briefing (evento ou simples) ----------
+  function checklistHtml(grupo, opcoes) {
+    return `<div class="checklist">
+      ${opcoes
+        .map(
+          (o, i) => `<label><input type="checkbox" data-grupo="${grupo}" value="${Fmt.escapeHtml(o)}" ${state.checklists[grupo].includes(o) ? "checked" : ""} /> ${Fmt.escapeHtml(o)}</label>`
+        )
+        .join("")}
+    </div>`;
+  }
+
+  function renderBriefingEvento() {
+    root.innerHTML = `
+      <form class="card wizard-card" id="briefing-form">
+        <div>
+          <div class="wizard-title">Briefing do evento</div>
+          <div class="wizard-hint">Quanto mais completo, mais rápido o planejamento começa — o prazo de 60 dias conta a partir daqui.</div>
+        </div>
+
+        <div class="row-2">
+          <div class="field"><label>Nome do evento</label><input type="text" id="f-nomeEvento" required /></div>
+          <div class="field"><label>Seu nome</label><input type="text" id="f-responsavelNome" required /></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Sua área</label><input type="text" id="f-responsavelArea" /></div>
+          <div class="field"><label>Seu e-mail</label><input type="email" id="f-responsavelEmail" required /></div>
+        </div>
+        <div class="field"><label>Telefone/ramal <span class="optional">(opcional)</span></label><input type="text" id="f-responsavelTelefone" style="max-width:220px" /></div>
+
+        <div class="field"><label>Objetivo do evento</label><textarea id="f-objetivo" placeholder="Por que esse evento será realizado? Qual resultado esperamos alcançar?"></textarea></div>
+        <div class="row-2">
+          <div class="field"><label>Público do evento</label><input type="text" id="f-publicoEvento" placeholder="Quem participará?" /></div>
+          <div class="field"><label>Qtd. estimada de participantes</label><input type="number" min="1" id="f-qtdParticipantes" /></div>
+        </div>
+
+        <div class="row-3">
+          <div class="field"><label>Data desejada</label><input type="date" id="f-dataDesejada" /></div>
+          <div class="field"><label>Horário início</label><input type="time" id="f-horarioInicio" /></div>
+          <div class="field"><label>Horário fim</label><input type="time" id="f-horarioFim" /></div>
+        </div>
+        <fieldset>
+          <legend>Flexibilidade de data/horário?</legend>
+          <div class="radio-row">
+            <label><input type="radio" name="flex" value="sim" /> Sim</label>
+            <label><input type="radio" name="flex" value="nao" checked /> Não</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Local</legend>
+          <div class="radio-row" style="margin-bottom:10px;">
+            <label><input type="radio" name="localDef" value="sim" /> Já está definido</label>
+            <label><input type="radio" name="localDef" value="nao" checked /> Preciso que pesquisem opções</label>
+          </div>
+          <input type="text" id="f-localTexto" placeholder="Se já definido, qual local?" />
+        </fieldset>
+
+        <div class="field">
+          <label>Formato do evento</label>
+          <div class="radio-row">
+            <label><input type="radio" name="formato" value="presencial" checked /> Presencial</label>
+            <label><input type="radio" name="formato" value="online" /> Online</label>
+            <label><input type="radio" name="formato" value="hibrido" /> Híbrido</label>
+          </div>
+        </div>
+        <div class="field"><label>Como você imagina a dinâmica do evento?</label><textarea id="f-dinamica" placeholder="Palestra, workshop, premiação, confraternização, coffee, almoço, happy hour etc."></textarea></div>
+
+        <fieldset><legend>Estrutura necessária</legend>${checklistHtml("estrutura", ESTRUTURA_OPCOES)}</fieldset>
+
+        <div class="field">
+          <label>Identidade visual do evento</label>
+          <div class="radio-row">
+            <label><input type="radio" name="identidade" value="definida" /> Já definida</label>
+            <label><input type="radio" name="identidade" value="nao_definida" checked /> Não definida</label>
+            <label><input type="radio" name="identidade" value="em_desenvolvimento" /> Em desenvolvimento</label>
+          </div>
+        </div>
+        <fieldset><legend>Materiais de comunicação necessários</legend>${checklistHtml("materiais", MATERIAIS_OPCOES)}</fieldset>
+
+        <fieldset>
+          <legend>Budget</legend>
+          <div class="radio-row" style="margin-bottom:10px;">
+            <label><input type="radio" name="budgetStatus" value="disponivel" /> Disponível</label>
+            <label><input type="radio" name="budgetStatus" value="nao_disponivel" checked /> Não disponível</label>
+            <label><input type="radio" name="budgetStatus" value="em_aprovacao" /> Em aprovação</label>
+          </div>
+          <input type="number" min="0" step="0.01" id="f-budgetValor" placeholder="Valor estimado (R$)" style="max-width:220px" />
+        </fieldset>
+
+        <fieldset><legend>O que a Comunicação/Eventos deve ser responsável por realizar?</legend>${checklistHtml("escopo", ESCOPO_OPCOES)}</fieldset>
+
+        <div class="field"><label>Fornecedor, espaço ou parceiro obrigatório <span class="optional">(opcional)</span></label><input type="text" id="f-fornecedor" /></div>
+        <div class="field"><label>Restrições ou observações importantes <span class="optional">(opcional)</span></label><textarea id="f-restricoes"></textarea></div>
+
+        ${cienciaSlaHtml()}
+
+        <div class="wizard-actions">
+          <button type="button" class="back-btn" id="btn-voltar">← Voltar</button>
+          <button type="submit" class="btn-primary">Enviar chamado</button>
+        </div>
+      </form>
+    `;
+    document.getElementById("btn-voltar").addEventListener("click", irAnterior);
+    wireChecklists();
+    document.getElementById("briefing-form").addEventListener("submit", onSubmitEvento);
+  }
+
+  function renderBriefingSimples() {
+    root.innerHTML = `
+      <form class="card wizard-card" id="briefing-form">
+        <div>
+          <div class="wizard-title">Detalhes da demanda</div>
+          <div class="wizard-hint">${Fmt.escapeHtml(tipoSelecionado()?.nome || "")} — prazo de ${Fmt.fmtSla(tipoSelecionado()?.slaDias, tipoSelecionado()?.slaContaDiasUteis)}.</div>
+        </div>
+
+        <div class="row-2">
+          <div class="field"><label>Seu nome <span class="optional">(opcional)</span></label><input type="text" id="f-nome" /></div>
+          <div class="field"><label>Área / loja / setor</label><input type="text" id="f-local" placeholder="Ex.: Loja 042 — Osasco" required /></div>
+        </div>
+
+        <div class="field">
+          <label>Público-alvo desta demanda</label>
+          <div class="radio-row">
+            ${PUBLICO_ALVO_CONTEUDO.map((p, i) => `<label><input type="radio" name="publicoAlvo" value="${p.valor}" ${i === 0 ? "checked" : ""} /> ${p.titulo}</label>`).join("")}
+          </div>
+        </div>
+
+        <div class="field"><label>Descreva a demanda</label><textarea id="f-desc" required placeholder="O que é? Qual o objetivo? Em caso de comunicado, detalhe todas as informações que precisam constar no texto final."></textarea></div>
+
+        <fieldset>
+          <legend>Já existe conteúdo, peça pronta ou referência?</legend>
+          <div class="radio-row" style="margin-bottom:10px;">
+            <label><input type="radio" name="contPronto" value="sim" /> Sim</label>
+            <label><input type="radio" name="contPronto" value="nao" checked /> Não — anexei referência de layout</label>
+          </div>
+          <textarea id="f-contProntoTexto" placeholder="Descreva o conteúdo/peça existente, ou a sugestão de layout."></textarea>
+        </fieldset>
+
+        <div class="field">
+          <label>Anexar arquivos <span class="optional">(opcional — até 4 arquivos, 100MB cada)</span></label>
+          <label class="file-drop" for="f-arquivos">Clique para escolher arquivos (Word, Excel, PPT, PDF, Imagem, Vídeo, Áudio)</label>
+          <input type="file" id="f-arquivos" multiple style="display:none" />
+          <div class="file-list" id="file-list"></div>
+        </div>
+
+        <div class="field"><label>Outra pessoa também precisa aprovar? <span class="optional">(opcional)</span></label>
+          <div class="row-2">
+            <input type="text" id="f-aprovadorNome" placeholder="Nome do aprovador" />
+            <input type="email" id="f-aprovadorEmail" placeholder="E-mail do aprovador" />
+          </div>
+        </div>
+
+        ${cienciaSlaHtml()}
+
+        <div class="wizard-actions">
+          <button type="button" class="back-btn" id="btn-voltar">← Voltar</button>
+          <button type="submit" class="btn-primary">Enviar chamado</button>
+        </div>
+      </form>
+    `;
+    document.getElementById("btn-voltar").addEventListener("click", irAnterior);
+
+    const fileInput = document.getElementById("f-arquivos");
+    document.querySelector(".file-drop").addEventListener("click", (e) => {
+      e.preventDefault();
+      fileInput.click();
+    });
+    fileInput.addEventListener("change", () => {
+      for (const f of fileInput.files) {
+        if (state.arquivos.length >= 4) return showToast("Máximo de 4 arquivos.");
+        if (f.size > 100 * 1024 * 1024) return showToast(`"${f.name}" passa de 100MB.`);
+        state.arquivos.push(f);
+      }
+      fileInput.value = "";
+      renderFileList();
+    });
+
+    document.getElementById("briefing-form").addEventListener("submit", onSubmitSimples);
+    renderFileList();
+  }
+
+  function renderFileList() {
+    const el = document.getElementById("file-list");
+    if (!el) return;
+    el.innerHTML = state.arquivos
+      .map((f, i) => `<div class="file-item"><span>${Fmt.escapeHtml(f.name)} · ${Fmt.fmtBytes(f.size)}</span><button type="button" data-i="${i}">remover</button></div>`)
+      .join("");
+    el.querySelectorAll("button").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        state.arquivos.splice(Number(btn.getAttribute("data-i")), 1);
+        renderFileList();
+      })
+    );
+  }
+
+  function cienciaSlaHtml() {
+    const tipo = tipoSelecionado();
+    return `
+      <div class="sla-note">⏱️ <span>Prazo desta demanda: <strong>${tipo ? Fmt.fmtSla(tipo.slaDias, tipo.slaContaDiasUteis) : ""}</strong>, contados a partir do recebimento do briefing completo. Até 2 revisões de conteúdo e 4 de design são consideradas dentro do mesmo chamado.</span></div>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-size:13.5px;">
+        <input type="checkbox" id="f-cienciaSla" required style="margin-top:3px;" />
+        <span>Estou ciente do prazo de SLA da área de Comunicação Interna informado acima.</span>
+      </label>
+    `;
+  }
+
+  function wireChecklists() {
+    document.querySelectorAll("input[data-grupo]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        const grupo = cb.getAttribute("data-grupo");
+        const lista = state.checklists[grupo];
+        const idx = lista.indexOf(cb.value);
+        if (cb.checked && idx === -1) lista.push(cb.value);
+        if (!cb.checked && idx !== -1) lista.splice(idx, 1);
+      });
+    });
+  }
+
+  function radioVal(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : null;
+  }
+
+  const CAMPO_LABEL = {
+    tipoSolicitacaoId: "Tipo de solicitação",
+    areaId: "Área",
+    cienciaSla: "Ciência do SLA",
+    descricao: "Descrição da demanda",
+    solicitanteEmail: "Seu e-mail",
+    segundoAprovadorEmail: "E-mail do aprovador",
+    "eventoDetalhe.responsavelEmail": "Seu e-mail"
+  };
+
+  function mensagemErro(err) {
+    if (err.detalhes && err.detalhes.length) {
+      const d = err.detalhes[0];
+      const campo = CAMPO_LABEL[d.campo] || d.campo;
+      return `${campo}: ${d.mensagem}`;
+    }
+    return err.message || "Não foi possível enviar o chamado.";
+  }
+
+  async function enviarAnexos(chamadoId) {
+    if (!state.arquivos.length) return;
+    const fd = new FormData();
+    state.arquivos.forEach((f) => fd.append("arquivos", f));
+    await Api.upload(`/api/chamados/${chamadoId}/anexos`, fd);
+  }
+
+  async function onSubmitSimples(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    try {
+      const payload = {
+        publico: state.publico,
+        areaId: state.areaId || undefined,
+        tipoSolicitacaoId: state.tipoSolicitacaoId,
+        solicitanteNome: document.getElementById("f-nome").value.trim() || undefined,
+        solicitanteLocalTexto: document.getElementById("f-local").value.trim(),
+        publicoAlvoConteudo: radioVal("publicoAlvo"),
+        descricao: document.getElementById("f-desc").value.trim(),
+        conteudoProntoRef: radioVal("contPronto") === "sim",
+        conteudoProntoRefTexto: document.getElementById("f-contProntoTexto").value.trim() || undefined,
+        segundoAprovadorNome: document.getElementById("f-aprovadorNome").value.trim() || undefined,
+        segundoAprovadorEmail: document.getElementById("f-aprovadorEmail").value.trim() || undefined,
+        cienciaSla: document.getElementById("f-cienciaSla").checked
+      };
+      const resultado = await Api.post("/api/chamados", payload);
+      await enviarAnexos(resultado.id);
+      mostrarConfirmacao(resultado);
+    } catch (err) {
+      showToast(mensagemErro(err));
+      btn.disabled = false;
+    }
+  }
+
+  async function onSubmitEvento(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    try {
+      const eventoDetalhe = {
+        nomeEvento: document.getElementById("f-nomeEvento").value.trim(),
+        responsavelNome: document.getElementById("f-responsavelNome").value.trim(),
+        responsavelArea: document.getElementById("f-responsavelArea").value.trim() || undefined,
+        responsavelEmail: document.getElementById("f-responsavelEmail").value.trim(),
+        responsavelTelefone: document.getElementById("f-responsavelTelefone").value.trim() || undefined,
+        objetivo: document.getElementById("f-objetivo").value.trim() || undefined,
+        publicoEvento: document.getElementById("f-publicoEvento").value.trim() || undefined,
+        qtdParticipantesEstimada: Number(document.getElementById("f-qtdParticipantes").value) || undefined,
+        dataDesejada: document.getElementById("f-dataDesejada").value || undefined,
+        horarioInicio: document.getElementById("f-horarioInicio").value || undefined,
+        horarioFim: document.getElementById("f-horarioFim").value || undefined,
+        flexibilidadeData: radioVal("flex") === "sim",
+        localDefinido: radioVal("localDef") === "sim",
+        localTexto: document.getElementById("f-localTexto").value.trim() || undefined,
+        formato: radioVal("formato"),
+        dinamicaEvento: document.getElementById("f-dinamica").value.trim() || undefined,
+        identidadeVisualStatus: radioVal("identidade"),
+        budgetStatus: radioVal("budgetStatus"),
+        budgetValorEstimado: Number(document.getElementById("f-budgetValor").value) || undefined,
+        fornecedorParceiro: document.getElementById("f-fornecedor").value.trim() || undefined,
+        restricoesObservacoes: document.getElementById("f-restricoes").value.trim() || undefined,
+        checklistEstrutura: state.checklists.estrutura,
+        checklistMateriaisComunicacao: state.checklists.materiais,
+        checklistEscopoEsperado: state.checklists.escopo
+      };
+      const payload = {
+        publico: state.publico,
+        areaId: state.areaId || undefined,
+        tipoSolicitacaoId: state.tipoSolicitacaoId,
+        solicitanteNome: eventoDetalhe.responsavelNome,
+        solicitanteEmail: eventoDetalhe.responsavelEmail,
+        cienciaSla: document.getElementById("f-cienciaSla").checked,
+        eventoDetalhe
+      };
+      const resultado = await Api.post("/api/chamados", payload);
+      mostrarConfirmacao(resultado);
+    } catch (err) {
+      showToast(mensagemErro(err));
+      btn.disabled = false;
+    }
+  }
+
+  function mostrarConfirmacao(resultado) {
+    document.getElementById("wizard-root").style.display = "none";
+    document.getElementById("steps").style.display = "none";
+    const box = document.getElementById("confirm-box");
+    document.getElementById("confirm-proto").textContent = resultado.protocolo;
+    document.getElementById("confirm-text").textContent =
+      resultado.status === "aguardando_aprovacao"
+        ? "Seu briefing foi recebido. O prazo de atendimento começa a contar assim que o segundo aprovador confirmar."
+        : "Assunto encaminhado automaticamente com base nas suas respostas.";
+    const notice = document.getElementById("confirm-notice");
+    if (resultado.analistaPrincipal) {
+      let txt = `📧 Notificação enviada para <strong>${Fmt.escapeHtml(resultado.analistaPrincipal.nome)}</strong>`;
+      if (resultado.analistaSecundario) txt += ` e <strong>${Fmt.escapeHtml(resultado.analistaSecundario.nome)}</strong> (co-responsável)`;
+      notice.innerHTML = txt;
+    } else {
+      notice.innerHTML = "Este tipo de demanda ainda não tem analista fixo — a supervisão vai atribuir manualmente.";
+    }
+    box.classList.add("show");
+  }
+
+  document.getElementById("btn-novo-chamado").addEventListener("click", () => window.location.reload());
+
+  // ---------- Render dispatch ----------
+  function render() {
+    renderSteps();
+    if (state.step === "publico") renderPublico();
+    else if (state.step === "area") renderArea();
+    else if (state.step === "tipo") renderTipo();
+    else if (state.step === "briefing") {
+      const tipo = tipoSelecionado();
+      if (tipo && tipo.requerBriefingEvento) renderBriefingEvento();
+      else renderBriefingSimples();
+    }
+  }
+
+  async function init() {
+    try {
+      const [tipos, areas] = await Promise.all([Api.get("/api/tipos-solicitacao"), Api.get("/api/areas")]);
+      state.tipos = tipos;
+      state.areas = areas;
+      render();
+    } catch (err) {
+      root.innerHTML = `<div class="loading-note">Não foi possível carregar o formulário. Recarregue a página.</div>`;
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Roteamento de Chamados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  .panel-page { max-width: 1180px; margin: 0 auto; padding: 32px 24px 60px; }
+  .panel-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 18px; flex-wrap: wrap; }
+  .panel-head h1 { font-size: 24px; }
+  .panel-head .lede { color: var(--ink-700); font-size: 14px; margin-top: 6px; max-width: 62ch; }
+
+  .rule-list { display: flex; flex-direction: column; gap: 10px; }
+  .rule-item { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--paper-50); display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .rule-item.inativa { opacity: 0.5; }
+  .rule-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--row-color); flex-shrink: 0; }
+  .rule-main { flex: 1; min-width: 240px; }
+  .rule-publicos { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 4px; }
+  .publico-chip { font-size: 10.5px; font-weight: 700; text-transform: uppercase; background: var(--paper-100); padding: 2px 7px; border-radius: 100px; color: var(--ink-700); }
+  .rule-target { font-size: 13.5px; color: var(--ink-700); }
+  .rule-who { font-weight: 700; font-size: 14px; }
+  .rule-meta { font-size: 11.5px; color: var(--ink-500); font-family: var(--font-mono); }
+  .rule-actions { display: flex; gap: 6px; }
+
+  .rule-form { padding: 20px; margin-bottom: 18px; display: none; flex-direction: column; gap: 14px; }
+  .rule-form.show { display: flex; }
+  .checkbox-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .checkbox-row label { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .loading-note { color: var(--ink-500); font-size: 13px; padding: 40px 0; text-align: center; }
+  .view-only-note { font-size: 12.5px; color: var(--ink-500); background: var(--paper-100); padding: 8px 12px; border-radius: 8px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="./painel.html">
+      <span class="brand-mark">CI</span>
+      <span class="brand-text">Central de Chamados</span>
+      <span class="brand-sub">Comunicação&nbsp;Interna</span>
+    </a>
+    <div class="topbar-right">
+      <nav class="tabs" aria-label="Navegação interna">
+        <a class="tab-btn" href="./painel.html">Painel</a>
+        <a class="tab-btn" href="./dashboard.html">Dashboard &amp; SLA</a>
+        <a class="tab-btn" href="./regras.html" aria-current="page">Roteamento</a>
+        <a class="tab-btn" href="./operacoes.html" id="nav-operacoes-link" style="display:none;">Visitas em Loja</a>
+      </nav>
+      <div class="session-chip">
+        <span class="session-avatar" id="session-avatar"></span>
+        <span><span class="session-name" id="session-name"></span><br><span class="session-role" id="session-role"></span></span>
+      </div>
+      <button class="logout-btn" id="btn-logout">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="panel-page">
+      <div class="panel-head">
+        <div>
+          <h1>Matriz de roteamento</h1>
+          <p class="lede">Define automaticamente qual analista recebe cada chamado, por público × área × tipo de solicitação. Regras mais específicas e de maior prioridade vencem em caso de empate.</p>
+        </div>
+        <button class="btn-primary" id="btn-nova-regra" style="display:none;">+ Nova regra</button>
+      </div>
+
+      <div id="form-wrap"></div>
+      <div id="rules-root"><div class="loading-note">Carregando…</div></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="../shared/format-utils.js"></script>
+<script src="../shared/api-client.js"></script>
+<script src="../shared/auth-client.js"></script>
+<script>
+(function () {
+  "use strict";
+  const Fmt = window.Fmt;
+  const Api = window.Api;
+
+  const PUBLICOS = ["Holding", "Operacao-Lojas", "Operacao-CD", "Todos"];
+
+  let sessao = null;
+  let regras = [];
+  let areas = [];
+  let tipos = [];
+  let analistas = [];
+  let editandoId = null;
+
+  function showToast(msg) {
+    const stack = document.getElementById("toast-stack");
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(() => {
+      el.style.transition = "opacity .25s";
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), 260);
+    }, 3200);
+  }
+
+  function nomeArea(id) {
+    if (!id) return "Qualquer área";
+    return areas.find((a) => a.id === id)?.nome || `Área #${id}`;
+  }
+  function nomeTipo(id) {
+    if (!id) return "Qualquer tipo";
+    return tipos.find((t) => t.id === id)?.nome || `Tipo #${id}`;
+  }
+  function nomeAnalista(id) {
+    return analistas.find((a) => a.id === id)?.nome || null;
+  }
+  function corAnalista(id) {
+    return analistas.find((a) => a.id === id)?.cor || "#999";
+  }
+
+  function renderLista() {
+    const root = document.getElementById("rules-root");
+    if (!regras.length) {
+      root.innerHTML = `<div class="loading-note">Nenhuma regra cadastrada ainda.</div>`;
+      return;
+    }
+    const podeEditar = sessao.papel === "supervisor";
+    root.innerHTML = `<div class="rule-list">${regras
+      .map((r) => {
+        const principal = nomeAnalista(r.analistaPrincipalId) || "—";
+        const secundario = r.analistaSecundarioId ? ` + ${nomeAnalista(r.analistaSecundarioId)} (co-responsável)` : "";
+        return `<div class="rule-item ${r.ativo ? "" : "inativa"}" style="--row-color:${corAnalista(r.analistaPrincipalId)}">
+          <span class="rule-dot"></span>
+          <div class="rule-main">
+            <div class="rule-publicos">${r.publicos.map((p) => `<span class="publico-chip">${p}</span>`).join("")}</div>
+            <div class="rule-target">${nomeArea(r.areaId)} · ${nomeTipo(r.tipoSolicitacaoId)}</div>
+            <div class="rule-who">${principal}${secundario}</div>
+            ${r.observacao ? `<div class="rule-meta">${Fmt.escapeHtml(r.observacao)}</div>` : ""}
+          </div>
+          <div class="rule-meta">prioridade ${r.prioridade}</div>
+          ${
+            podeEditar
+              ? `<div class="rule-actions">
+                  <button class="small-btn" data-action="editar" data-id="${r.id}">Editar</button>
+                  ${r.ativo ? `<button class="small-btn" data-action="desativar" data-id="${r.id}">Desativar</button>` : ""}
+                </div>`
+              : ""
+          }
+        </div>`;
+      })
+      .join("")}</div>`;
+
+    root.querySelectorAll("[data-action]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = Number(btn.getAttribute("data-id"));
+        if (btn.getAttribute("data-action") === "editar") abrirForm(regras.find((r) => r.id === id));
+        else desativar(id);
+      });
+    });
+  }
+
+  async function desativar(id) {
+    if (!confirm("Desativar esta regra de roteamento?")) return;
+    try {
+      await Api.del(`/api/regras-roteamento/${id}`);
+      showToast("Regra desativada.");
+      await carregarRegras();
+    } catch (err) {
+      showToast(err.message);
+    }
+  }
+
+  function abrirForm(regra) {
+    editandoId = regra ? regra.id : null;
+    const wrap = document.getElementById("form-wrap");
+    wrap.innerHTML = `
+      <form class="card rule-form show" id="rule-form">
+        <div class="wizard-title">${regra ? "Editar regra" : "Nova regra de roteamento"}</div>
+
+        <div class="field">
+          <label>Público(s)</label>
+          <div class="checkbox-row">
+            ${PUBLICOS.map((p) => `<label><input type="checkbox" name="publico" value="${p}" ${regra && regra.publicos.includes(p) ? "checked" : ""} /> ${p}</label>`).join("")}
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field"><label>Área <span class="optional">(vazio = qualquer área)</span></label>
+            <select id="f-area"><option value="">Qualquer área</option>${areas.map((a) => `<option value="${a.id}" ${regra && regra.areaId === a.id ? "selected" : ""}>${Fmt.escapeHtml(a.nome)}</option>`).join("")}</select>
+          </div>
+          <div class="field"><label>Tipo de solicitação <span class="optional">(vazio = qualquer tipo)</span></label>
+            <select id="f-tipo"><option value="">Qualquer tipo</option>${tipos.map((t) => `<option value="${t.id}" ${regra && regra.tipoSolicitacaoId === t.id ? "selected" : ""}>${Fmt.escapeHtml(t.nome)}</option>`).join("")}</select>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field"><label>Analista principal (dono do SLA)</label>
+            <select id="f-principal">${analistas.map((a) => `<option value="${a.id}" ${regra && regra.analistaPrincipalId === a.id ? "selected" : ""}>${Fmt.escapeHtml(a.nome)}</option>`).join("")}</select>
+          </div>
+          <div class="field"><label>Analista secundário <span class="optional">(opcional, também notificado)</span></label>
+            <select id="f-secundario"><option value="">Nenhum</option>${analistas.map((a) => `<option value="${a.id}" ${regra && regra.analistaSecundarioId === a.id ? "selected" : ""}>${Fmt.escapeHtml(a.nome)}</option>`).join("")}</select>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field"><label>Prioridade <span class="optional">(maior vence empate)</span></label><input type="number" id="f-prioridade" value="${regra ? regra.prioridade : 10}" /></div>
+          <div class="field"><label>Observação <span class="optional">(opcional)</span></label><input type="text" id="f-obs" value="${regra ? Fmt.escapeHtml(regra.observacao || "") : ""}" /></div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="ghost-btn" id="btn-cancelar-form">Cancelar</button>
+          <button type="submit" class="btn-primary">${regra ? "Salvar alterações" : "Criar regra"}</button>
+        </div>
+      </form>
+    `;
+    document.getElementById("btn-cancelar-form").addEventListener("click", () => {
+      wrap.innerHTML = "";
+      editandoId = null;
+    });
+    document.getElementById("rule-form").addEventListener("submit", salvarForm);
+    wrap.scrollIntoView({ behavior: "smooth" });
+  }
+
+  async function salvarForm(e) {
+    e.preventDefault();
+    const publicos = [...document.querySelectorAll('input[name="publico"]:checked')].map((cb) => cb.value);
+    if (!publicos.length) return showToast("Selecione ao menos um público.");
+    const analistaPrincipalId = Number(document.getElementById("f-principal").value);
+    const payload = {
+      publicos,
+      areaId: document.getElementById("f-area").value ? Number(document.getElementById("f-area").value) : null,
+      tipoSolicitacaoId: document.getElementById("f-tipo").value ? Number(document.getElementById("f-tipo").value) : null,
+      analistaPrincipalId,
+      analistaSecundarioId: document.getElementById("f-secundario").value ? Number(document.getElementById("f-secundario").value) : null,
+      prioridade: Number(document.getElementById("f-prioridade").value) || 0,
+      observacao: document.getElementById("f-obs").value.trim() || undefined
+    };
+    try {
+      if (editandoId) await Api.put(`/api/regras-roteamento/${editandoId}`, payload);
+      else await Api.post("/api/regras-roteamento", payload);
+      showToast("Regra salva.");
+      document.getElementById("form-wrap").innerHTML = "";
+      editandoId = null;
+      await carregarRegras();
+    } catch (err) {
+      showToast(err.message || "Não foi possível salvar.");
+    }
+  }
+
+  async function carregarRegras() {
+    regras = await Api.get("/api/regras-roteamento");
+    renderLista();
+  }
+
+  document.getElementById("btn-logout").addEventListener("click", () => window.AuthClient.logout());
+  document.getElementById("btn-nova-regra").addEventListener("click", () => abrirForm(null));
+
+  async function init() {
+    sessao = await Api.get("/auth/session");
+    if (!sessao.autenticado) return window.location.replace("./login.html");
+
+    document.getElementById("session-avatar").textContent = Fmt.initials(sessao.nome);
+    document.getElementById("session-avatar").style.setProperty("--session-color", sessao.cor);
+    document.getElementById("session-name").textContent = sessao.nome;
+    document.getElementById("session-role").textContent = sessao.papel === "supervisor" ? "Supervisão" : "Analista";
+    if (sessao.acessoDashboardOperacoes || sessao.papel === "supervisor") {
+      document.getElementById("nav-operacoes-link").style.display = "";
+    }
+
+    if (sessao.papel === "supervisor") {
+      document.getElementById("btn-nova-regra").style.display = "";
+    } else {
+      const note = document.createElement("div");
+      note.className = "view-only-note";
+      note.textContent = "Você está vendo em modo consulta — só a supervisão pode criar ou editar regras.";
+      document.getElementById("rules-root").before(note);
+    }
+
+    [areas, tipos, analistas] = await Promise.all([Api.get("/api/areas"), Api.get("/api/tipos-solicitacao"), Api.get("/api/analistas")]);
+    await carregarRegras();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

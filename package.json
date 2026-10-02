@@ -1,0 +1,31 @@
+{
+  "name": "sistema-chamados-comunicacao-interna",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de abertura e roteamento de chamados da área de Comunicação Interna.",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.5",
+    "_comment_node": "node:sqlite (usado no modo de desenvolvimento, DB_DRIVER=sqlite) exige Node 22.5+. Em produção com DB_DRIVER=oracle isso não é usado."
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jose": "^5.9.6",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.0.13",
+    "openid-client": "^5.7.0",
+    "zod": "^3.23.8"
+  },
+  "optionalDependencies": {
+    "oracledb": "^6.6.0"
+  }
+}

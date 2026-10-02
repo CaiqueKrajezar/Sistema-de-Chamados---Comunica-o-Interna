@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login do Analista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  .login-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .login-card { width: 100%; max-width: 400px; padding: 32px; display: flex; flex-direction: column; gap: 20px; }
+  .login-head { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .login-head .brand-mark { margin-bottom: 6px; }
+  .login-head h1 { font-size: 21px; }
+  .login-head p { margin: 0; color: var(--ink-700); font-size: 13.5px; }
+
+  .dev-mode-badge {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--warn); background: var(--warn-soft); padding: 3px 9px; border-radius: 100px; align-self: flex-start;
+  }
+  .analista-list { display: flex; flex-direction: column; gap: 8px; }
+  .analista-btn {
+    display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--paper-0);
+    border-radius: 9px; padding: 10px 12px; cursor: pointer; text-align: left; width: 100%;
+  }
+  .analista-btn:hover { border-color: var(--ink-500); background: var(--paper-100); }
+  .analista-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 700; font-size: 12px; color: #fff; background: var(--row-color);
+  }
+  .analista-btn .nome { font-weight: 600; font-size: 13.5px; }
+  .analista-btn .papel { font-size: 11.5px; color: var(--ink-500); }
+
+  .login-error { display: none; background: var(--danger-soft); color: var(--danger); padding: 9px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; }
+  .login-error.show { display: block; }
+  .back-link { text-align: center; }
+  .back-link a { color: var(--ink-500); font-size: 12.5px; text-decoration: none; }
+  .back-link a:hover { color: var(--teal); text-decoration: underline; }
+  .loading-note { color: var(--ink-500); font-size: 13px; text-align: center; padding: 12px 0; }
+</style>
+</head>
+<body>
+
+<div class="login-shell">
+  <div class="card login-card">
+    <div class="login-head">
+      <span class="brand-mark">CI</span>
+      <h1>Área do analista</h1>
+      <p>Entre para ver o painel e (se for supervisão) o dashboard de SLA.</p>
+    </div>
+
+    <div id="login-body"><div class="loading-note">Carregando…</div></div>
+    <div class="login-error" id="login-error">Não foi possível entrar.</div>
+    <div class="back-link"><a href="../index.html">← Voltar para abertura de chamado</a></div>
+  </div>
+</div>
+
+<script src="../shared/format-utils.js"></script>
+<script src="../shared/api-client.js"></script>
+<script>
+(function () {
+  "use strict";
+  const Fmt = window.Fmt;
+  const Api = window.Api;
+  const body = document.getElementById("login-body");
+  const errorBox = document.getElementById("login-error");
+
+  async function init() {
+    const sessao = await Api.get("/auth/session");
+    if (sessao.autenticado) {
+      window.location.replace("./painel.html");
+      return;
+    }
+
+    if (sessao.authMode === "keycloak") {
+      body.innerHTML = `<a class="btn-primary" style="text-align:center;" href="/auth/login">Entrar com login corporativo</a>`;
+      return;
+    }
+
+    // AUTH_MODE=dev: lista os analistas semeados pra simular o login
+    try {
+      const analistas = await Api.get("/auth/dev/analistas");
+      body.innerHTML =
+        `<span class="dev-mode-badge">Modo de desenvolvimento</span>` +
+        `<div class="analista-list">` +
+        analistas
+          .map(
+            (a) => `<button class="analista-btn" data-id="${a.id}" style="--row-color:${a.cor}">
+              <span class="analista-avatar">${Fmt.escapeHtml(Fmt.initials(a.nome))}</span>
+              <span><span class="nome">${Fmt.escapeHtml(a.nome)}</span><br><span class="papel">${a.papel === "supervisor" ? "Supervisão" : "Analista"}</span></span>
+            </button>`
+          )
+          .join("") +
+        `</div>`;
+      body.querySelectorAll(".analista-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await Api.post("/auth/dev/login", { analistaId: Number(btn.getAttribute("data-id")) });
+            window.location.href = "./painel.html";
+          } catch (err) {
+            errorBox.textContent = err.message || "Não foi possível entrar.";
+            errorBox.classList.add("show");
+          }
+        });
+      });
+    } catch (err) {
+      body.innerHTML = `<div class="loading-note">Não foi possível carregar a lista de analistas.</div>`;
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
