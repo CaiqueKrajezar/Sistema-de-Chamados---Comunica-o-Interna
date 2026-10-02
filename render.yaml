@@ -1,0 +1,26 @@
+# Blueprint do Render (render.com) — deploy de demonstração do sistema, 100% em modo dev
+# (SQLite embutido + login local, sem Oracle/Keycloak reais). Usado só pra apresentação;
+# a cada reinício do serviço gratuito o banco é recriado do zero (migrate + seed), então
+# qualquer chamado aberto durante a demo some no próximo boot — isso é esperado.
+#
+# Como usar: no Render, "New +" → "Blueprint" → aponte pro repositório do GitHub. O Render
+# lê este arquivo e cria o serviço já configurado.
+
+services:
+  - type: web
+    name: sistema-chamados-ci-demo
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run demo
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_MODE
+        value: dev
+      - key: DB_DRIVER
+        value: sqlite
+      - key: MAIL_MODE
+        value: console
+      - key: APP_SESSION_SECRET
+        generateValue: true
