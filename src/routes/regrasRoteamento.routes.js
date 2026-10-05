@@ -31,7 +31,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/", requireRole("supervisor"), express.json(), validateBody(regraSchema), async (req, res, next) => {
+router.post("/", requireRole("coordenador"), express.json(), validateBody(regraSchema), async (req, res, next) => {
   try {
     const regra = await repos.regraRoteamento.criar({ ...req.body, atualizadoPor: req.sessao.nome });
     res.status(201).json(regra);
@@ -40,7 +40,7 @@ router.post("/", requireRole("supervisor"), express.json(), validateBody(regraSc
   }
 });
 
-router.put("/:id", requireRole("supervisor"), express.json(), validateBody(regraSchema), async (req, res, next) => {
+router.put("/:id", requireRole("coordenador"), express.json(), validateBody(regraSchema), async (req, res, next) => {
   try {
     const regra = await repos.regraRoteamento.atualizar(Number(req.params.id), { ...req.body, atualizadoPor: req.sessao.nome });
     res.json(regra);
@@ -49,7 +49,7 @@ router.put("/:id", requireRole("supervisor"), express.json(), validateBody(regra
   }
 });
 
-router.delete("/:id", requireRole("supervisor"), async (req, res, next) => {
+router.delete("/:id", requireRole("coordenador"), async (req, res, next) => {
   try {
     const regra = await repos.regraRoteamento.desativar(Number(req.params.id), req.sessao.nome);
     res.json(regra);

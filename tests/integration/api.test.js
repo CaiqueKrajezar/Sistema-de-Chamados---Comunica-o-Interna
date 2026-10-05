@@ -151,15 +151,15 @@ test("API HTTP — fluxo completo de chamados, auth e SLA", async (t) => {
     assert.equal(r3.status, 409);
   });
 
-  await t.test("reatribuição e dashboard são restritos a supervisor", async () => {
+  await t.test("reatribuição e dashboard são restritos a coordenador", async () => {
     const analistas = (await call("GET", "/auth/dev/analistas")).data;
     const tiago = analistas.find((a) => a.nome === "Tiago Oliveira");
-    const supervisor = analistas.find((a) => a.papel === "supervisor");
+    const coordenador = analistas.find((a) => a.papel === "coordenador");
 
     const loginAnalista = await call("POST", "/auth/dev/login", { analistaId: tiago.id });
     const cookieAnalista = getCookie(loginAnalista.resp);
-    const loginSupervisor = await call("POST", "/auth/dev/login", { analistaId: supervisor.id });
-    const cookieSupervisor = getCookie(loginSupervisor.resp);
+    const loginCoordenador = await call("POST", "/auth/dev/login", { analistaId: coordenador.id });
+    const cookieCoordenador = getCookie(loginCoordenador.resp);
 
     const create = await call("POST", "/api/chamados", {
       publico: "Operacao-Lojas",
@@ -170,29 +170,29 @@ test("API HTTP — fluxo completo de chamados, auth e SLA", async (t) => {
 
     const negado = await call("PATCH", `/api/chamados/${create.data.id}/reatribuir`, { analistaPrincipalId: tiago.id }, cookieAnalista);
     assert.equal(negado.status, 403);
-    const ok = await call("PATCH", `/api/chamados/${create.data.id}/reatribuir`, { analistaPrincipalId: tiago.id }, cookieSupervisor);
+    const ok = await call("PATCH", `/api/chamados/${create.data.id}/reatribuir`, { analistaPrincipalId: tiago.id }, cookieCoordenador);
     assert.equal(ok.status, 200);
 
     const dashNegado = await call("GET", "/api/dashboard", undefined, cookieAnalista);
     assert.equal(dashNegado.status, 403);
-    const dashOk = await call("GET", "/api/dashboard", undefined, cookieSupervisor);
+    const dashOk = await call("GET", "/api/dashboard", undefined, cookieCoordenador);
     assert.equal(dashOk.status, 200);
     assert.ok(dashOk.data.geral.total >= 1);
   });
 
-  await t.test("edição da matriz de roteamento é restrita a supervisor", async () => {
+  await t.test("edição da matriz de roteamento é restrita a coordenador", async () => {
     const analistas = (await call("GET", "/auth/dev/analistas")).data;
     const tiago = analistas.find((a) => a.nome === "Tiago Oliveira");
-    const supervisor = analistas.find((a) => a.papel === "supervisor");
+    const coordenador = analistas.find((a) => a.papel === "coordenador");
     const cookieAnalista = getCookie((await call("POST", "/auth/dev/login", { analistaId: tiago.id })).resp);
-    const cookieSupervisor = getCookie((await call("POST", "/auth/dev/login", { analistaId: supervisor.id })).resp);
+    const cookieCoordenador = getCookie((await call("POST", "/auth/dev/login", { analistaId: coordenador.id })).resp);
 
     const negado = await call("POST", "/api/regras-roteamento", { publicos: ["Todos"], analistaPrincipalId: tiago.id, prioridade: 5 }, cookieAnalista);
     assert.equal(negado.status, 403);
 
-    const criado = await call("POST", "/api/regras-roteamento", { publicos: ["Todos"], analistaPrincipalId: tiago.id, prioridade: 5 }, cookieSupervisor);
+    const criado = await call("POST", "/api/regras-roteamento", { publicos: ["Todos"], analistaPrincipalId: tiago.id, prioridade: 5 }, cookieCoordenador);
     assert.equal(criado.status, 201);
-    const desativado = await call("DELETE", `/api/regras-roteamento/${criado.data.id}`, undefined, cookieSupervisor);
+    const desativado = await call("DELETE", `/api/regras-roteamento/${criado.data.id}`, undefined, cookieCoordenador);
     assert.equal(desativado.status, 200);
     assert.equal(desativado.data.ativo, false);
   });

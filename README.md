@@ -6,7 +6,7 @@
 Sistema de abertura e roteamento automático de chamados da área de Comunicação Interna.
 Funcionário abre o chamado sem cadastro; o sistema já roteia pro analista dono (por
 público × área × tipo de solicitação), calcula o prazo de SLA em dias úteis, e mantém
-um painel + dashboard para os analistas e a supervisão.
+um painel + dashboard para os analistas e a coordenação.
 
 Este projeto foi construído **sem acesso direto ao Oracle nem ao Keycloak da empresa**.
 Ele roda 100% localmente em modo de desenvolvimento (banco SQLite embutido, login
@@ -70,13 +70,13 @@ npm run dev                 # sobe em http://localhost:3000
    (`KEYCLOAK_BASE_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`,
    `KEYCLOAK_REDIRECT_URI`). No Keycloak, criar um client *confidential*, tipo
    Authorization Code + PKCE, com `KEYCLOAK_REDIRECT_URI` cadastrado como redirect URI
-   válido. As roles `supervisor`/`analista` (nomes configuráveis via
-   `KEYCLOAK_SUPERVISOR_ROLE`/`KEYCLOAK_ANALISTA_ROLE`) precisam existir no realm ou no
+   válido. As roles `coordenador`/`analista` (nomes configuráveis via
+   `KEYCLOAK_COORDENADOR_ROLE`/`KEYCLOAK_ANALISTA_ROLE`) precisam existir no realm ou no
    client — é delas que o sistema decide quem vê o dashboard e pode reatribuir/editar a
    matriz de roteamento. `KEYCLOAK_ROLE_CLAIM_PATH` (padrão `realm_access.roles`) define
    onde no token ler essas roles — ajuste se o Keycloak da empresa usar outra convenção.
    - Com `AUTH_JIT_PROVISION=true` (padrão), o primeiro login de alguém com role
-     `analista`/`supervisor` já cria o registro correspondente automaticamente. Se
+     `analista`/`coordenador` já cria o registro correspondente automaticamente. Se
      preferir cadastrar manualmente antes, mude pra `false`.
 3. **E-mail**: mude `MAIL_MODE=smtp` e preencha o bloco `SMTP_*` com as credenciais reais
    (Exchange/O365 ou o que a empresa usar). Teste primeiro com `MAIL_MODE=console` — as
@@ -127,7 +127,7 @@ tests/          unitários (domain/) + integração HTTP ponta a ponta (node --t
   passam por um segundo filtro de área, mapeada pra Rafael/Daniela/Tiago conforme a
   matriz repassada pela área de Comunicação. Chamados de "Eventos" com público
   Holding/Todos notificam Tiago (dono do SLA) **e** Daniela (co-responsável) ao mesmo
-  tempo. Área "Outras" nasce sem dono, numa fila que só a supervisão resolve
+  tempo. Área "Outras" nasce sem dono, numa fila que só a coordenação resolve
   manualmente. Toda essa matriz é editável pela tela **Roteamento**, sem precisar mexer
   em código.
 - **SLA**: cada tipo de solicitação tem um prazo em dias úteis (a maioria) ou corridos
@@ -136,7 +136,7 @@ tests/          unitários (domain/) + integração HTTP ponta a ponta (node --t
   "aguardando aprovação" e o relógio só começa quando alguém aprovar pelo painel.
 - **Revisões**: até 2 de conteúdo e 4 de design por chamado; a partir disso a API recusa
   (`409`) e orienta abrir um novo chamado.
-- **Permissões**: só supervisão reatribui chamado, edita a matriz de roteamento e vê o
+- **Permissões**: só coordenação reatribui chamado, edita a matriz de roteamento e vê o
   dashboard geral de SLA — sempre checado no backend (`requireRole`), nunca só escondido
   no front-end.
 
@@ -146,7 +146,7 @@ Feature separada dos chamados: o Rafael (responsável por Operações/Lojas/CD) 
 periódicas em loja e aplica um checklist em 3 partes (auditoria física, entrevista com
 líder, validação com equipe) pelo app "Checklist Fácil". Ele exporta um CSV desse app e
 sobe na aba **Visitas em Loja** (só aparece pra quem tem a flag `acesso_dashboard_operacoes`
-na tabela `analista` — setada pro Rafael no `seed.js` — ou pra qualquer supervisor).
+na tabela `analista` — setada pro Rafael no `seed.js` — ou pra qualquer coordenador).
 
 - **Cada upload substitui o dataset inteiro** do analista (confirmado: o app sempre
   exporta a planilha completa, não incremental) — não precisa e não deve tentar mandar só

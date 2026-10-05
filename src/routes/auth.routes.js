@@ -71,7 +71,7 @@ router.get("/callback", async (req, res, next) => {
     const roles = keycloak.extrairRoles(claims);
     const papel = keycloak.resolverPapel(roles);
     if (!papel) {
-      return res.status(403).send("Seu usuário não tem a role 'analista' nem 'supervisor' configurada no Keycloak.");
+      return res.status(403).send("Seu usuário não tem a role 'analista' nem 'coordenador' configurada no Keycloak.");
     }
 
     const repos = require("../repositories");

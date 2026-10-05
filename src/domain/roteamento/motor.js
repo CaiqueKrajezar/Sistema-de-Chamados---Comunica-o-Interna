@@ -5,7 +5,7 @@ const repos = require("../../repositories");
 /**
  * Zé, esse é o motor que decide pra quem vai o chamado. Importante: a matriz de
  * roteamento (público × área × tipo → analista) NÃO tá fixa no código, fica na tabela
- * REGRA_ROTEAMENTO e dá pra editar pela tela do supervisor (regras.html) sem precisar de
+ * REGRA_ROTEAMENTO e dá pra editar pela tela do coordenador (regras.html) sem precisar de
  * deploy — foi assim que a área de Comunicação pediu, porque a matriz muda de vez em
  * quando (troca de analista responsável, área nova etc.).
  *
@@ -13,7 +13,7 @@ const repos = require("../../repositories");
  * área+tipo), eu desempato por prioridade primeiro, depois por especificidade (regra com
  * área E tipo definidos ganha de regra só com área). Sem nenhuma regra batendo — caso da
  * área "Outras", por exemplo — o chamado nasce sem dono, numa fila "a triar" que só a
- * supervisão resolve via reatribuição manual. Isso é proposital: prefiro um chamado sem
+ * coordenação resolve via reatribuição manual. Isso é proposital: prefiro um chamado sem
  * dono E visível, do que ele cair silenciosamente em algum lugar errado.
  */
 async function resolverAnalista({ publico, areaId, tipoSolicitacaoId }) {

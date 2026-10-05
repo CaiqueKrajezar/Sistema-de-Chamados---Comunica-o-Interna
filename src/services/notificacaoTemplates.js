@@ -15,7 +15,7 @@ function novoChamado({ chamado, tipoNome, coResponsavel }) {
 function reatribuicao({ chamado, tipoNome }) {
   return {
     assunto: `Chamado ${chamado.protocolo} reatribuído para você`,
-    corpo: `O chamado ${chamado.protocolo} (${tipoNome}) foi reatribuído para você pelo supervisor. Acesse o painel para mais detalhes.`
+    corpo: `O chamado ${chamado.protocolo} (${tipoNome}) foi reatribuído para você pelo coordenador. Acesse o painel para mais detalhes.`
   };
 }
 

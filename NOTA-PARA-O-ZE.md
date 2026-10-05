@@ -14,7 +14,7 @@ WhatsApp) e não tinha como saber quem ficava responsável por cada um nem quant
 tava demorando. Esse sistema é basicamente: o colaborador abre o chamado numa tela
 simples sem precisar logar em nada, o sistema já sabe pra qual analista aquilo vai (por
 público + área + tipo de solicitação) e calcula o prazo automaticamente. Os analistas têm
-um painel pra trabalhar os chamados deles, e a supervisão tem um dashboard de SLA e pode
+um painel pra trabalhar os chamados deles, e a coordenação tem um dashboard de SLA e pode
 reatribuir chamado manualmente quando precisa.
 
 Tem também um dashboard separado de visitas em loja (pro Rafael, que cuida de
@@ -71,7 +71,7 @@ URL provavelmente vai ser divulgada só internamente (intranet, e-mail pros anal
    dado de exemplo).
 2. Time responsável pelo Keycloak cria um client pra essa aplicação, me passa
    `KEYCLOAK_BASE_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`,
-   e confirma o nome das roles que vão mapear pra "analista" e "supervisor" (isso é
+   e confirma o nome das roles que vão mapear pra "analista" e "coordenador" (isso é
    configurável, não precisa ser exatamente esse nome).
 3. Decidir SMTP de verdade (hoje tá em `MAIL_MODE=console`, só loga no console em vez de
    mandar e-mail — é assim que eu testei).

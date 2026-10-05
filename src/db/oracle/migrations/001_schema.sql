@@ -27,7 +27,7 @@ CREATE TABLE analista (
   nome             VARCHAR2(200) NOT NULL,
   email            VARCHAR2(200) NOT NULL UNIQUE,
   keycloak_subject VARCHAR2(255),
-  papel            VARCHAR2(20) DEFAULT 'analista' NOT NULL CHECK (papel IN ('analista','supervisor')),
+  papel            VARCHAR2(20) DEFAULT 'analista' NOT NULL CHECK (papel IN ('analista','coordenador')),
   cor              VARCHAR2(7) DEFAULT '#3b6fd4' NOT NULL,
   ativo            CHAR(1) DEFAULT 'S' NOT NULL CHECK (ativo IN ('S','N')),
   criado_em        TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL

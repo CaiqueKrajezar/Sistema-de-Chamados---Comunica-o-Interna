@@ -552,15 +552,15 @@
   async function init() {
     const sessao = await Api.get("/auth/session");
     if (!sessao.autenticado) return window.location.replace("./login.html");
-    if (!sessao.acessoDashboardOperacoes && sessao.papel !== "supervisor") {
+    if (!sessao.acessoDashboardOperacoes && sessao.papel !== "coordenador") {
       return window.location.replace("./painel.html");
     }
 
     document.getElementById("session-avatar").textContent = Fmt.initials(sessao.nome);
     document.getElementById("session-avatar").style.setProperty("--session-color", sessao.cor);
     document.getElementById("session-name").textContent = sessao.nome;
-    document.getElementById("session-role").textContent = sessao.papel === "supervisor" ? "Supervisão" : "Analista";
-    if (sessao.papel !== "supervisor") {
+    document.getElementById("session-role").textContent = sessao.papel === "coordenador" ? "Coordenação" : "Analista";
+    if (sessao.papel !== "coordenador") {
       document.getElementById("nav-dashboard-link").remove();
       document.getElementById("nav-regras-link").remove();
     }

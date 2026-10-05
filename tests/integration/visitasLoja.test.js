@@ -35,7 +35,7 @@ const CSV_EXEMPLO = [
   '"Concluído";"Sul";"60";"0,00%";"Não";"Não";"100,00%";"Luiz"'
 ].join("\n");
 
-test("Dashboard de Visitas em Loja — upload, métricas e permissão restrita ao Rafael/supervisor", async (t) => {
+test("Dashboard de Visitas em Loja — upload, métricas e permissão restrita ao Rafael/coordenador", async (t) => {
   await setupTestDb();
   const app = require("../../src/app");
   server = app.listen(0);
@@ -45,7 +45,7 @@ test("Dashboard de Visitas em Loja — upload, métricas e permissão restrita a
   const analistas = (await call("GET", "/auth/dev/analistas")).data;
   const rafael = analistas.find((a) => a.nome === "Rafael Campos");
   const tiago = analistas.find((a) => a.nome === "Tiago Oliveira");
-  const supervisor = analistas.find((a) => a.papel === "supervisor");
+  const coordenador = analistas.find((a) => a.papel === "coordenador");
 
   await t.test("Tiago (sem a permissão) recebe 403 em qualquer rota de visitas-loja", async () => {
     const login = await call("POST", "/auth/dev/login", {
@@ -105,10 +105,10 @@ test("Dashboard de Visitas em Loja — upload, métricas e permissão restrita a
     assert.equal(r.data.mediaGeral, 50);
   });
 
-  await t.test("supervisor também tem acesso (via papel), mesmo sem a flag específica", async () => {
+  await t.test("coordenador também tem acesso (via papel), mesmo sem a flag específica", async () => {
     const login = await call("POST", "/auth/dev/login", {
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ analistaId: supervisor.id })
+      body: JSON.stringify({ analistaId: coordenador.id })
     });
     const cookieSup = getCookie(login.resp);
     const r = await call("GET", "/api/visitas-loja/metricas", { headers: { cookie: cookieSup } });

@@ -44,7 +44,7 @@ const ANALISTAS = [
   { nome: "Rafael Campos", email: "rafael.campos@empresa.com", cor: "#3b6fd4", papel: "analista" },
   { nome: "Daniela Giuzio", email: "daniela.giuzio@empresa.com", cor: "#d94f8c", papel: "analista" },
   { nome: "Tiago Oliveira", email: "tiago.oliveira@empresa.com", cor: "#2f9e5c", papel: "analista" },
-  { nome: "Supervisão CI", email: "supervisao.ci@empresa.com", cor: "#8354c9", papel: "supervisor" }
+  { nome: "Coordenação CI", email: "coordenacao.ci@empresa.com", cor: "#8354c9", papel: "coordenador" }
 ];
 
 // área → analista (dono), conforme a matriz passada pela área de Comunicação
@@ -63,7 +63,7 @@ const AREA_PARA_ANALISTA = {
   "BU Comercial/MKT": "Tiago Oliveira",
   "BU Finanças": "Tiago Oliveira",
   "Planejamento Estratégico": "Tiago Oliveira"
-  // "Outras" fica de propósito sem regra: cai na fila "a triar" do supervisor.
+  // "Outras" fica de propósito sem regra: cai na fila "a triar" do coordenador.
 };
 
 async function seedTipos() {
@@ -186,7 +186,7 @@ async function seedRegras(tipos, areas, analistas) {
     logger.info("Regra criada: Eventos (Holding/Todos) → Tiago Oliveira + Daniela Giuzio");
   }
 
-  // "Outras" (área) de propósito não recebe regra: nasce sem dono, na fila do supervisor.
+  // "Outras" (área) de propósito não recebe regra: nasce sem dono, na fila do coordenador.
 }
 
 async function main() {

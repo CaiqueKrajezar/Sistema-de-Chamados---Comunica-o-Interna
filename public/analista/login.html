@@ -48,7 +48,7 @@
     <div class="login-head">
       <span class="brand-mark">CI</span>
       <h1>Área do analista</h1>
-      <p>Entre para ver o painel e (se for supervisão) o dashboard de SLA.</p>
+      <p>Entre para ver o painel e (se for coordenação) o dashboard de SLA.</p>
     </div>
 
     <div id="login-body"><div class="loading-note">Carregando…</div></div>
@@ -89,7 +89,7 @@
           .map(
             (a) => `<button class="analista-btn" data-id="${a.id}" style="--row-color:${a.cor}">
               <span class="analista-avatar">${Fmt.escapeHtml(Fmt.initials(a.nome))}</span>
-              <span><span class="nome">${Fmt.escapeHtml(a.nome)}</span><br><span class="papel">${a.papel === "supervisor" ? "Supervisão" : "Analista"}</span></span>
+              <span><span class="nome">${Fmt.escapeHtml(a.nome)}</span><br><span class="papel">${a.papel === "coordenador" ? "Coordenação" : "Analista"}</span></span>
             </button>`
           )
           .join("") +

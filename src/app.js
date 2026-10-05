@@ -36,7 +36,7 @@ app.use("/api", publicoRoutes); // GET /api/tipos-solicitacao, GET /api/areas, P
 // de anexo antes mesmo de checar se a rota é essa.
 app.use("/api/chamados", anexosRoutes); // POST/GET /:id/anexos (upload é público — parte do fluxo de abertura)
 app.use("/api/chamados", chamadosRoutes); // GET/listar, GET/:id, status, aprovar, revisões (autenticado)
-app.use("/api/chamados", reatribuicaoRoutes); // PATCH /:id/reatribuir (supervisor)
+app.use("/api/chamados", reatribuicaoRoutes); // PATCH /:id/reatribuir (coordenador)
 app.use("/api/regras-roteamento", regrasRoteamentoRoutes);
 app.use("/api/analistas", analistasRoutes);
 app.use("/api/dashboard", dashboardRoutes);

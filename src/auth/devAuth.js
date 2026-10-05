@@ -4,7 +4,7 @@
  * Zé, deixa eu ser bem direto sobre esse arquivo: isso NÃO é autenticação de verdade.
  * Não checa senha nenhuma, é literalmente "escolhe um analista da lista e pronto". Só
  * existe pra eu conseguir testar o sistema inteiro (painel, dashboard, permissão de
- * supervisor etc.) sem ter acesso ao Keycloak. Só fica disponível quando AUTH_MODE=dev
+ * coordenador etc.) sem ter acesso ao Keycloak. Só fica disponível quando AUTH_MODE=dev
  * no .env — em produção vocês vão deixar AUTH_MODE=keycloak e esse caminho nem fica
  * acessível (as rotas /auth/dev/* voltam 404, olha auth.routes.js). De qualquer forma,
  * bom garantir que ninguém sobe isso em produção com AUTH_MODE=dev por engano.

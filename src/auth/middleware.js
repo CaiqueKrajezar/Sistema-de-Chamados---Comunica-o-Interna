@@ -33,11 +33,11 @@ function requirePagina(req, res, next) {
 
 /**
  * Dashboard de Visitas em Loja: liberado pra quem tem a flag `acessoDashboardOperacoes`
- * (hoje só o Rafael, setado no seed) ou pra qualquer supervisor.
+ * (hoje só o Rafael, setado no seed) ou pra qualquer coordenador.
  */
 function requireAcessoOperacoes(req, res, next) {
   if (!req.sessao) return res.status(401).json({ erro: "Não autenticado." });
-  if (!req.sessao.acessoDashboardOperacoes && req.sessao.papel !== "supervisor") {
+  if (!req.sessao.acessoDashboardOperacoes && req.sessao.papel !== "coordenador") {
     return res.status(403).json({ erro: "Sem permissão para o dashboard de operações." });
   }
   next();

@@ -26,7 +26,7 @@ CREATE TABLE analista (
   nome             TEXT NOT NULL,
   email            TEXT NOT NULL UNIQUE,
   keycloak_subject TEXT,
-  papel            TEXT NOT NULL DEFAULT 'analista' CHECK (papel IN ('analista','supervisor')),
+  papel            TEXT NOT NULL DEFAULT 'analista' CHECK (papel IN ('analista','coordenador')),
   cor              TEXT NOT NULL DEFAULT '#3b6fd4',
   ativo            TEXT NOT NULL DEFAULT 'S' CHECK (ativo IN ('S','N')),
   criado_em        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))

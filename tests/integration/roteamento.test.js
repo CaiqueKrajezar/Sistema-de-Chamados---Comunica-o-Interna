@@ -47,7 +47,7 @@ test("motor de roteamento — regras 1 a 3 do briefing de Comunicação Interna"
     assert.equal(r.responsavelSla, "PRINCIPAL");
   });
 
-  await t.test("Área Outras não tem regra — cai na fila 'a triar' do supervisor", async () => {
+  await t.test("Área Outras não tem regra — cai na fila 'a triar' do coordenador", async () => {
     const r = await resolverAnalista({ publico: "Holding", areaId: areaOutras.id, tipoSolicitacaoId: tipoComunicado.id });
     assert.equal(r.analistaPrincipalId, null);
   });

@@ -200,7 +200,7 @@
         const slaHtml = sla ? `<span class="status-pill ${sla.cls}">${sla.text}</span>` : "—";
 
         let analistaCell;
-        if (sessao.papel === "supervisor") {
+        if (sessao.papel === "coordenador") {
           const opts = analistas.map((opt) => `<option value="${opt.id}" ${opt.id === c.analistaPrincipalId ? "selected" : ""}>${Fmt.escapeHtml(opt.nome)}</option>`).join("");
           analistaCell = `<span class="reassign-wrap" style="--row-color:${cor}"><span class="dot"></span>
             <select class="reassign-select" data-id="${c.id}" aria-label="Reatribuir">
@@ -291,12 +291,12 @@
     document.getElementById("session-avatar").textContent = Fmt.initials(sessao.nome);
     document.getElementById("session-avatar").style.setProperty("--session-color", sessao.cor);
     document.getElementById("session-name").textContent = sessao.nome;
-    document.getElementById("session-role").textContent = sessao.papel === "supervisor" ? "Supervisão" : "Analista";
-    if (sessao.papel !== "supervisor") {
+    document.getElementById("session-role").textContent = sessao.papel === "coordenador" ? "Coordenação" : "Analista";
+    if (sessao.papel !== "coordenador") {
       document.getElementById("nav-dashboard-link").remove();
       document.getElementById("nav-regras-link").remove();
     }
-    if (sessao.acessoDashboardOperacoes || sessao.papel === "supervisor") {
+    if (sessao.acessoDashboardOperacoes || sessao.papel === "coordenador") {
       document.getElementById("nav-operacoes-link").style.display = "";
     }
 
@@ -304,7 +304,7 @@
     await carregarChamados();
 
     if (new URLSearchParams(window.location.search).get("dashboard") === "negado") {
-      showToast("O dashboard geral de SLA é restrito à supervisão.");
+      showToast("O dashboard geral de SLA é restrito à coordenação.");
       window.history.replaceState({}, "", window.location.pathname);
     }
   }

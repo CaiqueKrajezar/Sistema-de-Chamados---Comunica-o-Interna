@@ -130,7 +130,7 @@
       root.innerHTML = `<div class="loading-note">Nenhuma regra cadastrada ainda.</div>`;
       return;
     }
-    const podeEditar = sessao.papel === "supervisor";
+    const podeEditar = sessao.papel === "coordenador";
     root.innerHTML = `<div class="rule-list">${regras
       .map((r) => {
         const principal = nomeAnalista(r.analistaPrincipalId) || "—";
@@ -268,17 +268,17 @@
     document.getElementById("session-avatar").textContent = Fmt.initials(sessao.nome);
     document.getElementById("session-avatar").style.setProperty("--session-color", sessao.cor);
     document.getElementById("session-name").textContent = sessao.nome;
-    document.getElementById("session-role").textContent = sessao.papel === "supervisor" ? "Supervisão" : "Analista";
-    if (sessao.acessoDashboardOperacoes || sessao.papel === "supervisor") {
+    document.getElementById("session-role").textContent = sessao.papel === "coordenador" ? "Coordenação" : "Analista";
+    if (sessao.acessoDashboardOperacoes || sessao.papel === "coordenador") {
       document.getElementById("nav-operacoes-link").style.display = "";
     }
 
-    if (sessao.papel === "supervisor") {
+    if (sessao.papel === "coordenador") {
       document.getElementById("btn-nova-regra").style.display = "";
     } else {
       const note = document.createElement("div");
       note.className = "view-only-note";
-      note.textContent = "Você está vendo em modo consulta — só a supervisão pode criar ou editar regras.";
+      note.textContent = "Você está vendo em modo consulta — só a coordenação pode criar ou editar regras.";
       document.getElementById("rules-root").before(note);
     }
 

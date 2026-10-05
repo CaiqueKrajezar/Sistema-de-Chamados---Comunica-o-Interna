@@ -6,7 +6,7 @@ const { requireRole } = require("../auth/middleware");
 const { metricas, estaAtrasado } = require("../domain/sla/slaStatus");
 
 const router = express.Router();
-router.use(requireRole("supervisor"));
+router.use(requireRole("coordenador"));
 
 router.get("/", async (req, res, next) => {
   try {

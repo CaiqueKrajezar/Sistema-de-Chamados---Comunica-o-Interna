@@ -69,7 +69,7 @@ async function handleCallback(req, { codeVerifier, state }) {
   return { tokenSet, claims: tokenSet.claims() };
 }
 
-/** Lê o papel (supervisor/analista) de dentro do token pelo caminho configurado em KEYCLOAK_ROLE_CLAIM_PATH. */
+/** Lê o papel (coordenador/analista) de dentro do token pelo caminho configurado em KEYCLOAK_ROLE_CLAIM_PATH. */
 function extrairRoles(claims) {
   const caminho = env.KEYCLOAK_ROLE_CLAIM_PATH.split(".");
   let node = claims;
@@ -81,7 +81,7 @@ function extrairRoles(claims) {
 }
 
 function resolverPapel(roles) {
-  if (roles.includes(env.KEYCLOAK_SUPERVISOR_ROLE)) return "supervisor";
+  if (roles.includes(env.KEYCLOAK_COORDENADOR_ROLE)) return "coordenador";
   if (roles.includes(env.KEYCLOAK_ANALISTA_ROLE)) return "analista";
   return null;
 }

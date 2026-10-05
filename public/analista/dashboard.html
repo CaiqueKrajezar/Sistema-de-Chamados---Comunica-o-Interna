@@ -68,7 +68,7 @@
       <div class="panel-head">
         <div>
           <h1>Dashboard de demandas e SLA</h1>
-          <p class="lede">Restrito à supervisão — carga e cumprimento de prazo por analista.</p>
+          <p class="lede">Restrito à coordenação — carga e cumprimento de prazo por analista.</p>
         </div>
       </div>
       <div id="dashboard-root"><div class="loading-note">Carregando…</div></div>
@@ -154,12 +154,12 @@
   async function init() {
     const sessao = await Api.get("/auth/session");
     if (!sessao.autenticado) return window.location.replace("./login.html");
-    if (sessao.papel !== "supervisor") return window.location.replace("./painel.html?dashboard=negado");
+    if (sessao.papel !== "coordenador") return window.location.replace("./painel.html?dashboard=negado");
 
     document.getElementById("session-avatar").textContent = Fmt.initials(sessao.nome);
     document.getElementById("session-avatar").style.setProperty("--session-color", sessao.cor);
     document.getElementById("session-name").textContent = sessao.nome;
-    document.getElementById("session-role").textContent = "Supervisão";
+    document.getElementById("session-role").textContent = "Coordenação";
     document.getElementById("nav-operacoes-link").style.display = "";
 
     try {

@@ -11,7 +11,7 @@ const router = express.Router();
 
 const schema = z.object({ analistaPrincipalId: z.coerce.number().int().positive() });
 
-router.patch("/:id/reatribuir", requireRole("supervisor"), express.json(), validateBody(schema), async (req, res, next) => {
+router.patch("/:id/reatribuir", requireRole("coordenador"), express.json(), validateBody(schema), async (req, res, next) => {
   try {
     const chamado = await repos.chamado.buscarPorId(Number(req.params.id));
     if (!chamado) return res.status(404).json({ erro: "Chamado não encontrado." });

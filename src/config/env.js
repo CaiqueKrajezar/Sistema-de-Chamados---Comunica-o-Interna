@@ -45,7 +45,7 @@ const baseSchema = z.object({
   KEYCLOAK_REDIRECT_URI: z.string().optional(),
   KEYCLOAK_POST_LOGOUT_REDIRECT_URI: z.string().optional(),
   KEYCLOAK_ROLE_CLAIM_PATH: z.string().default("realm_access.roles"),
-  KEYCLOAK_SUPERVISOR_ROLE: z.string().default("supervisor"),
+  KEYCLOAK_COORDENADOR_ROLE: z.string().default("coordenador"),
   KEYCLOAK_ANALISTA_ROLE: z.string().default("analista"),
 
   DB_DRIVER: z.enum(["sqlite", "oracle"]).default("sqlite"),
