@@ -1,6 +1,6 @@
 # Sistema de Chamados — Comunicação Interna
 
-> Zé, começa por [NOTA-PARA-O-ZE.md](./NOTA-PARA-O-ZE.md) — é mais rápido que entrar
+> Zé, começa por [José Paulo.md](./José%20Paulo.md) — é mais rápido que entrar
 > direto no código.
 
 Sistema de abertura e roteamento automático de chamados da área de Comunicação Interna.
