@@ -1,5 +1,21 @@
 "use strict";
 
+/**
+ * Zé, esse arquivo é o coração de "trocar Oracle/Keycloak sem mexer em código": tudo
+ * que é configuração de ambiente passa por aqui e é validado com zod antes do app subir.
+ * Se faltar alguma variável obrigatória pro modo escolhido, o processo nem sobe — prefiro
+ * falhar na inicialização com uma mensagem clara do que deixar o app rodar pela metade e
+ * quebrar em produção na primeira requisição. Repara que AUTH_MODE e DB_DRIVER são os dois
+ * "interruptores" principais: dev/sqlite é o que eu uso pra desenvolver sem acesso a nada
+ * real, keycloak/oracle é o que vocês vão usar em produção. O resto do código quase não
+ * verifica AUTH_MODE ou DB_DRIVER diretamente — os pontos que decidem com base nisso são
+ * só src/db/index.js (qual implementação de repositório carregar) e
+ * src/routes/auth.routes.js (qual fluxo de login expor). Todo o resto do app trabalha só
+ * com o cookie de sessão já resolvido (req.sessao), sem saber se veio do modo dev ou do
+ * Keycloak de verdade — isso é proposital, pra não espalhar "if (AUTH_MODE === ...)" pelo
+ * código inteiro.
+ */
+
 const path = require("node:path");
 const dotenv = require("dotenv");
 const { z } = require("zod");

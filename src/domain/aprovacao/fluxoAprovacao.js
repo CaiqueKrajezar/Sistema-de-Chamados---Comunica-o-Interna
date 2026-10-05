@@ -3,12 +3,14 @@
 const { calcularPrazo } = require("../sla/diasUteis");
 
 /**
- * Decide o status inicial do chamado e quando o SLA começa a contar.
- * Sem segundo aprovador: briefing já é considerado completo no envio (o form já exige
- * todos os campos obrigatórios + ciência do SLA) → SLA começa na hora.
- * Com segundo aprovador: chamado fica 'aguardando_aprovacao' e o SLA só começa quando
- * alguém aprovar (ver resolverAprovacao) — implementa literalmente "o prazo conta a
- * partir do recebimento de um briefing completo".
+ * Zé, isso aqui veio direto de uma regra que a área de Comunicação Interna foi bem
+ * enfática ao me passar: "o prazo só conta a partir do recebimento de um briefing
+ * completo". Então modelei literalmente assim — se o solicitante indicou um segundo
+ * aprovador no formulário, o chamado nasce em 'aguardando_aprovacao' com SLA ainda
+ * parado (dataInicioSla null), e só quando esse aprovador confirma (resolverAprovacao)
+ * o relógio começa a contar. Sem segundo aprovador, considero o briefing completo já no
+ * envio — o próprio formulário público já exige os campos obrigatórios e a ciência do
+ * SLA antes de deixar enviar, então não tem o que esperar.
  */
 function resolverAberturaChamado({ tipo, segundoAprovadorEmail, feriados = [] }) {
   const agora = new Date();

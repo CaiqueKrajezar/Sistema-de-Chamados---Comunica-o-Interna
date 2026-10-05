@@ -1,13 +1,16 @@
 "use strict";
 
 /**
- * Cálculo de prazo em dias úteis/corridos. Trabalha em UTC por simplicidade — uma limitação
- * conhecida para v1 (ver README): perto da virada do dia, o resultado pode variar até um dia
- * em relação ao fuso configurado em SLA_TIMEZONE. Refinar com uma lib de fuso horário
- * (ex.: date-fns-tz) fica como próximo passo se isso importar na prática.
+ * Zé, assumo aqui um limite que quero deixar bem claro: trabalho em UTC, não converto
+ * de verdade pro fuso de SLA_TIMEZONE. Na prática isso só pega perto da virada do dia —
+ * o prazo pode calcular com um dia de diferença do que seria no horário de Brasília.
+ * Deixei assim pra v1 porque resolver fuso horário direito ia puxar uma lib (tipo
+ * date-fns-tz) e não achei que valia a complexidade antes de validar o resto. Se isso
+ * incomodar na prática, é o primeiro ponto que eu mexeria.
  *
- * "N dias úteis a partir de X" NÃO conta o próprio dia X — conta a partir do dia seguinte,
- * que é a leitura usual desse tipo de prazo em briefing de área de negócio.
+ * Outro detalhe que não é óbvio: "N dias úteis a partir de X" NÃO conta o dia X — conta a
+ * partir do dia seguinte. É assim que a área de Comunicação Interna definiu o prazo no
+ * briefing que me passaram, então segui a leitura deles.
  */
 
 function isFimDeSemana(date) {

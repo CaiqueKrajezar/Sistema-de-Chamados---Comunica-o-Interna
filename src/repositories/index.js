@@ -1,9 +1,11 @@
 "use strict";
 
 /**
- * Contrato de repositórios. `src/db/sqlite/repositories/*` e `src/db/oracle/repositories/*`
- * implementam exatamente essas mesmas funções — o resto da aplicação (rotas, domain/) só
- * conhece este contrato, nunca SQL ou o driver escolhido.
+ * Zé, deixei essa lista aqui de propósito como referência rápida — é o contrato que
+ * `src/db/sqlite/repositories/*` e `src/db/oracle/repositories/*` têm que implementar
+ * igualzinho, função por função, mesmo formato de retorno. O resto da aplicação (rotas,
+ * domain/) só conhece isso aqui, nunca SQL nem qual driver tá ativo. Se um dia for
+ * mexer em algum repositório Oracle, usa isso como checklist do que precisa existir.
  *
  * tipoSolicitacao: { listarAtivos(), buscarPorId(id), buscarPorNome(nome), criar(dados) }
  * area:            { listarAtivas(), buscarPorId(id), buscarPorNome(nome), criar(dados) }

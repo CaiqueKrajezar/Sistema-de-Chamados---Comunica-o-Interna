@@ -1,5 +1,24 @@
 "use strict";
 
+/*
+ * Zé, esse é o fluxo OIDC de verdade (Authorization Code + PKCE), usando a lib
+ * `openid-client` — não usei o pacote `keycloak-connect` porque ele tá descontinuado.
+ * Fiz o require do `openid-client` escondido dentro de `loadOpenidClient()` (não lá no
+ * topo do arquivo) pelo mesmo motivo do oracledb: esse módulo só é carregado quando
+ * AUTH_MODE=keycloak de fato usa alguma função daqui, então quem roda em modo dev não
+ * paga esse custo. O `getClient()` guarda a promise de descoberta do Issuer (aquele
+ * `.well-known/openid-configuration`) num cache de módulo pra não ficar batendo no
+ * Keycloak a cada request — só descobre uma vez.
+ *
+ * Eu não tinha um Keycloak de teste pra validar esse fluxo de ponta a ponta, então
+ * segui a documentação do `openid-client` v5 à risca. O que vai precisar de validação
+ * real: KEYCLOAK_BASE_URL + KEYCLOAK_REALM batendo certinho com a URL de discovery, e o
+ * KEYCLOAK_ROLE_CLAIM_PATH batendo com onde as roles aparecem no token de vocês (depende
+ * de como o realm foi configurado — por padrão o Keycloak manda em
+ * `realm_access.roles`, que é o default aqui, mas se usarem roles de client em vez de
+ * realm, o caminho muda).
+ */
+
 const { env } = require("../config/env");
 
 let clientPromise = null;

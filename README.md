@@ -1,5 +1,8 @@
 # Sistema de Chamados — Comunicação Interna
 
+> Zé, começa por [NOTA-PARA-O-ZE.md](./NOTA-PARA-O-ZE.md) — é mais rápido que entrar
+> direto no código.
+
 Sistema de abertura e roteamento automático de chamados da área de Comunicação Interna.
 Funcionário abre o chamado sem cadastro; o sistema já roteia pro analista dono (por
 público × área × tipo de solicitação), calcula o prazo de SLA em dias úteis, e mantém

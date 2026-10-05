@@ -5,6 +5,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { env } = require("../../config/env");
 
+// Zé, usei o `node:sqlite` que já vem embutido no Node (desde a v22.5) em vez de instalar
+// o better-sqlite3 — na minha máquina não tinha as Build Tools do Visual Studio pra
+// compilar o módulo nativo dele, e o `node:sqlite` resolve isso sem precisar instalar
+// nada a mais, zero dependência nativa. É só modo dev/teste mesmo, DB_DRIVER=oracle não
+// encosta nesse arquivo.
+
 let db = null;
 
 /** Conexão única (arquivo local) usada em desenvolvimento/testes — DB_DRIVER=sqlite. */

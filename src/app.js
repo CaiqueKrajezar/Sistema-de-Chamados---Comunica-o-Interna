@@ -16,6 +16,14 @@ const analistasRoutes = require("./routes/analistas.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const visitasLojaRoutes = require("./routes/visitasLoja.routes");
 
+/*
+ * Zé, um processo Express só, servindo API e front estático junto (public/) — não quis
+ * complicar com um build separado de SPA, menos peça pra vocês hospedarem. `carregarSessao`
+ * roda em TODA request antes de qualquer rota, lendo o cookie e populando `req.sessao`
+ * (ou deixando null) — é a partir daí que `requireAuth`/`requireRole` conseguem decidir
+ * liberar ou barrar. Reparem na ordem de app.use() mais abaixo, tem uma pegadinha
+ * documentada ali que já me mordeu uma vez.
+ */
 const app = express();
 app.disable("x-powered-by");
 app.use(cookieParser());

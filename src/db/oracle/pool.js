@@ -3,6 +3,23 @@
 const { env } = require("../../config/env");
 const logger = require("../../config/logger");
 
+/*
+ * Zé, esse arquivo só é de fato exercitado quando DB_DRIVER=oracle — eu não tive como
+ * testar contra um Oracle real aqui, então testei a parte que dá pra testar sem banco
+ * (o `oracledb` carrega certinho, a pool connection string monta certinho) e o resto eu
+ * segui a documentação oficial do node-oracledb à risca. Se der algum erro de conexão
+ * na hora de integrar de verdade, bem provável que seja algo específico do ambiente de
+ * vocês (connect string, wallet, modo thin vs thick) e não um bug de lógica — me chama
+ * que a gente debuga junto.
+ *
+ * `oracledb` é dependência opcional no package.json (optionalDependencies) de propósito:
+ * assim quem só for rodar em modo sqlite não precisa instalar esse pacote (ele tem um
+ * script de instalação que baixa binário nativo, não é instantâneo). Por isso o
+ * `require('oracledb')` fica escondido dentro de uma função (loadDriver) em vez de lá no
+ * topo do arquivo — se tentasse importar direto e o pacote não estivesse instalado, ia
+ * quebrar o processo inteiro mesmo rodando em modo sqlite.
+ */
+
 let pool = null;
 let driverRef = null;
 

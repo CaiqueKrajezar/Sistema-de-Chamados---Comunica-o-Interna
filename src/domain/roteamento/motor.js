@@ -3,9 +3,18 @@
 const repos = require("../../repositories");
 
 /**
- * Resolve o analista dono de um chamado a partir de público × área × tipo.
- * Sem regra correspondente (ex.: área "Outras"), retorna analistaPrincipalId=null —
- * o chamado nasce numa fila "a triar" que só o supervisor resolve, via reatribuição manual.
+ * Zé, esse é o motor que decide pra quem vai o chamado. Importante: a matriz de
+ * roteamento (público × área × tipo → analista) NÃO tá fixa no código, fica na tabela
+ * REGRA_ROTEAMENTO e dá pra editar pela tela do supervisor (regras.html) sem precisar de
+ * deploy — foi assim que a área de Comunicação pediu, porque a matriz muda de vez em
+ * quando (troca de analista responsável, área nova etc.).
+ *
+ * Quando mais de uma regra bate (ex.: uma regra genérica de área + uma específica de
+ * área+tipo), eu desempato por prioridade primeiro, depois por especificidade (regra com
+ * área E tipo definidos ganha de regra só com área). Sem nenhuma regra batendo — caso da
+ * área "Outras", por exemplo — o chamado nasce sem dono, numa fila "a triar" que só a
+ * supervisão resolve via reatribuição manual. Isso é proposital: prefiro um chamado sem
+ * dono E visível, do que ele cair silenciosamente em algum lugar errado.
  */
 async function resolverAnalista({ publico, areaId, tipoSolicitacaoId }) {
   const candidatas = await repos.regraRoteamento.buscarCandidatas({ publico, areaId, tipoSolicitacaoId });
