@@ -1,7 +1,7 @@
 # Pro Zé
 
 Fala Zé, beleza? Segue o sistema de chamados da Comunicação Interna que te falei. Já
-apresentei pro pessoal e foi bem aceito, então agora é hora de ver com a arquitetura o
+apresentei pro pessoal e foi bem aceito, então agora é hora de ver o
 que falta pra isso rodar de verdade na infra da empresa. Deixei esse arquivo aqui na raiz
 só pra te situar rápido antes de você entrar no código — o README tem o detalhe técnico
 completo (variáveis de ambiente, como rodar local, etc.), isso aqui é mais pra contexto e
@@ -14,8 +14,26 @@ WhatsApp) e não tinha como saber quem ficava responsável por cada um nem quant
 tava demorando. Esse sistema é basicamente: o colaborador abre o chamado numa tela
 simples sem precisar logar em nada, o sistema já sabe pra qual analista aquilo vai (por
 público + área + tipo de solicitação) e calcula o prazo automaticamente. Os analistas têm
-um painel pra trabalhar os chamados deles, e a coordenação tem um dashboard de SLA e pode
+um painel pra trabalhar os chamados deles, e a supervisão tem um dashboard de SLA e pode
 reatribuir chamado manualmente quando precisa.
+
+## Pra rodar local e testar
+
+Zé, isso aqui é o passo que mais gente esquece: o banco não vem populado no zip (nem
+podia, `data/` fica de fora de propósito). Os tipos de solicitação, áreas, analistas e a
+matriz de roteamento só existem depois de rodar o seed. Então a ordem certa é:
+
+```
+npm install
+npm run migrate      # cria o banco SQLite local com o schema
+npm run seed         # só aqui que entram os tipos/áreas/analistas de exemplo
+npm run dev
+```
+
+Se você rodou `npm run dev` direto sem passar pelo `migrate`/`seed`, o app sobe
+normalmente mas os selects da tela de abertura de chamado ficam vazios — é exatamente
+isso que parece ter acontecido. Não precisa reinstalar nada, só roda os dois comandos de
+cima e recarrega a página.
 
 Tem também um dashboard separado de visitas em loja (pro Rafael, que cuida de
 Operações/Lojas/CD) — isso é outra funcionalidade, meio independente do resto, que
@@ -69,7 +87,7 @@ URL provavelmente vai ser divulgada só internamente (intranet, e-mail pros anal
    `ORACLE_CONNECT_STRING` (ver `.env.example`) — roda `npm run migrate` apontando pra
    lá, depois `npm run seed` (ou adapta o seed com os analistas/áreas reais, hoje tá com
    dado de exemplo).
-2. Time responsável pelo Keycloak cria um client pra essa aplicação, me passa
+2. Criar um client pra essa aplicação, me passa
    `KEYCLOAK_BASE_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`,
    e confirma o nome das roles que vão mapear pra "analista" e "coordenador" (isso é
    configurável, não precisa ser exatamente esse nome).
